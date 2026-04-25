@@ -7,7 +7,14 @@ import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { StatCard } from '../../components/dashboard/StatCard';
 import { SectionTitle } from '../../components/dashboard/SectionTitle';
 import { InfoCard } from '../../components/dashboard/InfoCard';
-import { buildDashboardMetrics, getUnreadNotifications, getUserClassRecords, getVisibleAttendance, getVisibleRatings, getVisibleReports } from '../../utils/appSelectors';
+import {
+  buildDashboardMetrics,
+  getUnreadNotifications,
+  getUserClassRecords,
+  getVisibleAttendance,
+  getVisibleRatings,
+  getVisibleReports,
+} from '../../utils/appSelectors';
 
 export function LecturerHomeScreen() {
   const { user } = useAuth();
@@ -37,8 +44,8 @@ export function LecturerHomeScreen() {
         return (
           <InfoCard
             key={item.id}
-            title={`${course?.courseCode} • ${item.className}`}
-            meta={`${item.lectureTime} • ${item.venue}`}
+            title={`${course?.courseCode} - ${item.className}`}
+            meta={`${item.lectureTime} - ${item.venue}`}
             description={`Registered students: ${item.totalRegisteredStudents}`}
           />
         );

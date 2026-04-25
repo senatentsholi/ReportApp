@@ -1,13 +1,29 @@
 import React from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useAppData } from '../../hooks/useAppData';
 import { appTheme } from '../../src/theme';
 
-const logoSource = require('../../assets/images/icon.png');
+const logoSource = require('../../assets/images/limkokwing-logo.jpg');
+
+function formatRole(role) {
+  const normalizedRole = String(role || '').trim().toLowerCase();
+
+  if (normalizedRole === 'prl') {
+    return 'PRL';
+  }
+
+  if (normalizedRole === 'pl') {
+    return 'PL';
+  }
+
+  return normalizedRole ? normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1) : '';
+}
 
 export function ScreenHeader({ title, subtitle, user, unreadCount = 0 }) {
   const { data, markNotificationRead } = useAppData();
+  const navigation = useNavigation();
 
   const openNotifications = async () => {
     const notifications = data.notifications
@@ -33,13 +49,26 @@ export function ScreenHeader({ title, subtitle, user, unreadCount = 0 }) {
     Alert.alert('Notifications', message);
   };
 
+  const openProfile = () => {
+    const parentNavigation = navigation.getParent?.();
+
+    if (parentNavigation?.navigate) {
+      parentNavigation.navigate('Profile');
+      return;
+    }
+
+    navigation.navigate?.('Profile');
+  };
+
   return (
     <View style={styles.row}>
       <View style={styles.left}>
-        <Image source={user?.avatarUrl ? { uri: user.avatarUrl } : logoSource} style={styles.avatar} />
+        <Pressable onPress={openProfile} hitSlop={8}>
+          <Image source={user?.avatarUrl ? { uri: user.avatarUrl } : logoSource} style={styles.avatar} />
+        </Pressable>
         <View style={styles.copy}>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle || user?.role}</Text>
+          <Text style={styles.subtitle}>{subtitle || formatRole(user?.role)}</Text>
         </View>
       </View>
       <Pressable style={styles.bellWrap} onPress={openNotifications}>
@@ -70,6 +99,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 18,
+    backgroundColor: '#000000',
   },
   copy: {
     flex: 1,
@@ -83,7 +113,6 @@ const styles = StyleSheet.create({
   subtitle: {
     color: appTheme.colors.textMuted,
     fontSize: 13,
-    textTransform: 'capitalize',
   },
   bellWrap: {
     width: 48,

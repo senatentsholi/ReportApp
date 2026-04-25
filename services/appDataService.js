@@ -161,7 +161,7 @@ export const appDataService = {
   },
 
   updateProfile(userId, payload) {
-    return updateRecord('users', userId, payload);
+    return updateRecord('users', userId, { ...payload, updatedAt: serverTimestamp() });
   },
 
   async markNotificationRead(notificationId) {

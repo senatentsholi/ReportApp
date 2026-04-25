@@ -12,6 +12,91 @@ function normalizeRole(role) {
   return String(role || '').trim().toLowerCase();
 }
 
+function isBlank(value) {
+  return value === undefined || value === null || String(value).trim() === '';
+}
+
+function buildProfileShape({ uid, email, fullName, role, profile = {} }) {
+  const normalizedRole = normalizeRole(profile.role || role);
+
+  return {
+    uid,
+    name: profile.name || profile.fullName || fullName || '',
+    email: (profile.email || email || '').trim().toLowerCase(),
+    role: normalizedRole,
+    avatarUrl: profile.avatarUrl || '',
+    facultyName: profile.facultyName || '',
+    className: profile.className || '',
+    department: profile.department || '',
+    streamName: profile.streamName || '',
+    darkMode: Boolean(profile.darkMode),
+  };
+}
+
+async function syncProfileDocument({ uid, email, fullName, role }) {
+  const profileRef = doc(firestore, 'users', uid);
+  const snapshot = await getDoc(profileRef);
+
+  if (!snapshot.exists()) {
+    throw new Error('User profile was not found in Firestore.');
+  }
+
+  const profile = snapshot.data();
+  const normalizedRole = normalizeRole(profile.role || role);
+
+  if (!normalizedRole) {
+    throw new Error('User role is missing from the Firestore profile.');
+  }
+
+  const patch = {};
+
+  if (profile.uid !== uid) {
+    patch.uid = uid;
+  }
+
+  if (isBlank(profile.name) && !isBlank(fullName)) {
+    patch.name = fullName.trim();
+  }
+
+  if (isBlank(profile.email) && !isBlank(email)) {
+    patch.email = email.trim().toLowerCase();
+  }
+
+  if (isBlank(profile.role)) {
+    patch.role = normalizedRole;
+  }
+
+  ['avatarUrl', 'facultyName', 'className', 'department', 'streamName'].forEach((field) => {
+    if (profile[field] === undefined) {
+      patch[field] = '';
+    }
+  });
+
+  if (profile.darkMode === undefined) {
+    patch.darkMode = false;
+  }
+
+  if (!profile.createdAt) {
+    patch.createdAt = serverTimestamp();
+  }
+
+  if (Object.keys(patch).length) {
+    patch.updatedAt = serverTimestamp();
+    await setDoc(profileRef, patch, { merge: true });
+  }
+
+  return buildProfileShape({
+    uid,
+    email,
+    fullName,
+    role: normalizedRole,
+    profile: {
+      ...profile,
+      ...patch,
+    },
+  });
+}
+
 function normalizeUser(uid, profile = {}) {
   return {
     id: uid,
@@ -22,19 +107,22 @@ function normalizeUser(uid, profile = {}) {
     role: normalizeRole(profile.role),
     className: profile.className || '',
     facultyName: profile.facultyName || '',
-    department: profile.facultyName || profile.department || '',
+    department: profile.department || '',
+    streamName: profile.streamName || '',
     avatarUrl: profile.avatarUrl || '',
+    darkMode: Boolean(profile.darkMode),
   };
 }
 
-async function getUserProfile(uid) {
-  const snapshot = await getDoc(doc(firestore, 'users', uid));
+async function getUserProfile(sessionUser, role) {
+  const profile = await syncProfileDocument({
+    uid: sessionUser.uid,
+    email: sessionUser.email || '',
+    fullName: sessionUser.displayName || '',
+    role,
+  });
 
-  if (!snapshot.exists()) {
-    throw new Error('User profile was not found in Firestore.');
-  }
-
-  return normalizeUser(uid, snapshot.data());
+  return normalizeUser(sessionUser.uid, profile);
 }
 
 export const authService = {
@@ -46,7 +134,7 @@ export const authService = {
       }
 
       try {
-        const profile = await getUserProfile(sessionUser.uid);
+        const profile = await getUserProfile(sessionUser);
         callback(profile);
       } catch (error) {
         callback(null, error);
@@ -56,7 +144,7 @@ export const authService = {
 
   async signIn({ email, password, role }) {
     const credential = await signInWithEmailAndPassword(firebaseAuth, email.trim(), password);
-    const profile = await getUserProfile(credential.user.uid);
+    const profile = await getUserProfile(credential.user, role);
 
     if (profile.role !== normalizeRole(role)) {
       await signOut(firebaseAuth);
@@ -71,11 +159,14 @@ export const authService = {
     const credential = await createUserWithEmailAndPassword(firebaseAuth, email.trim().toLowerCase(), password);
 
     const profile = {
-      uid: credential.user.uid,
-      name: fullName.trim(),
-      email: email.trim().toLowerCase(),
-      role: normalizedRole,
+      ...buildProfileShape({
+        uid: credential.user.uid,
+        email,
+        fullName,
+        role: normalizedRole,
+      }),
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
 
     await setDoc(doc(firestore, 'users', credential.user.uid), profile);

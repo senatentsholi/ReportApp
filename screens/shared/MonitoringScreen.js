@@ -36,7 +36,7 @@ export function MonitoringScreen() {
     riskLevel: 'Moderate',
   });
 
-  const isEditableRole = user.role !== 'Student';
+  const isEditableRole = user.role !== 'student';
   const visibleMonitoring = getVisibleMonitoring(data.monitoring, user);
   const filtered = useSearch(
     visibleMonitoring,
@@ -55,24 +55,28 @@ export function MonitoringScreen() {
   };
 
   const handleSave = async () => {
-    const payload = {
-      ...form,
-      ownerId: user.uid,
-      ownerRole: user.role,
-      facultyName: user.facultyName || user.department,
-      streamName: user.streamName,
-      className: user.className || '',
-    };
+    try {
+      const payload = {
+        ...form,
+        ownerId: user.uid,
+        ownerRole: user.role,
+        facultyName: user.facultyName || user.department,
+        streamName: user.streamName || '',
+        className: user.className || '',
+      };
 
-    if (editingId) {
-      await updateMonitoring(editingId, payload);
-      Alert.alert('Monitoring updated', 'The monitoring note has been updated.');
-    } else {
-      await saveMonitoring(payload);
-      Alert.alert('Monitoring saved', 'The monitoring note has been added.');
+      if (editingId) {
+        await updateMonitoring(editingId, payload);
+        Alert.alert('Monitoring updated', 'The monitoring note has been updated.');
+      } else {
+        await saveMonitoring(payload);
+        Alert.alert('Monitoring saved', 'The monitoring note has been added.');
+      }
+
+      resetForm();
+    } catch (error) {
+      Alert.alert('Unable to save monitoring note', error.message || 'Please review the form and try again.');
     }
-
-    resetForm();
   };
 
   const beginEdit = (item) => {

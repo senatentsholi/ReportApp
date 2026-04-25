@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { useAuth } from '../../src/providers/AuthProvider';
@@ -50,6 +50,16 @@ export function LecturerAttendanceScreen() {
     query,
     (item) => `${item.studentId} ${item.studentName} ${item.className} ${item.date} ${item.status}`
   );
+
+  useEffect(() => {
+    if (!editingId && !form.classId && classes.length) {
+      setForm((current) => ({
+        ...current,
+        classId: classes[0]?.id || '',
+        className: classes[0]?.className || '',
+      }));
+    }
+  }, [classes, editingId, form.classId]);
 
   const updateField = (field, value) => {
     if (field === 'classId') {

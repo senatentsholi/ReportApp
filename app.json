@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "LUCTReportApp",
-    "slug": "LUCTReportApp",
+    "name": "Limkokwing Reports",
+    "slug": "limkokwing-reports",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "luctreportapp",
+    "icon": "./assets/images/limkokwing-logo.jpg",
+    "scheme": "limkokwingreports",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,25 +13,24 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/images/limkokwing-logo.jpg",
+        "monochromeImage": "./assets/images/limkokwing-logo.jpg"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/limkokwing-logo.jpg"
     },
     "plugins": [
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/limkokwing-logo.jpg",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#08111F"
+          "backgroundColor": "#000000"
         }
       ]
     ],

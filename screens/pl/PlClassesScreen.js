@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { useAuth } from '../../src/providers/AuthProvider';
@@ -36,6 +36,10 @@ export function PlClassesScreen() {
     courseId: courses[0]?.id || '',
     courseCode: courses[0]?.courseCode || '',
     courseName: courses[0]?.courseName || '',
+    facultyName: courses[0]?.facultyName || '',
+    streamName: courses[0]?.streamName || '',
+    principalLecturerId: courses[0]?.principalLecturerId || '',
+    principalLecturerName: courses[0]?.principalLecturerName || '',
     lecturerId: courses[0]?.assignedLecturerId || '',
     lecturerName: courses[0]?.assignedLecturerName || '',
     venue: '',
@@ -51,6 +55,26 @@ export function PlClassesScreen() {
     (item) => `${item.className} ${item.courseCode} ${item.courseName} ${item.lecturerName} ${item.venue}`
   );
 
+  useEffect(() => {
+    if (!editingId && !form.courseId && courses.length) {
+      setForm({
+        className: '',
+        courseId: courses[0]?.id || '',
+        courseCode: courses[0]?.courseCode || '',
+        courseName: courses[0]?.courseName || '',
+        facultyName: courses[0]?.facultyName || '',
+        streamName: courses[0]?.streamName || '',
+        principalLecturerId: courses[0]?.principalLecturerId || '',
+        principalLecturerName: courses[0]?.principalLecturerName || '',
+        lecturerId: courses[0]?.assignedLecturerId || '',
+        lecturerName: courses[0]?.assignedLecturerName || '',
+        venue: '',
+        lectureTime: '',
+        totalRegisteredStudents: '',
+      });
+    }
+  }, [courses, editingId, form.courseId]);
+
   const updateField = (field, value) => {
     if (field === 'courseId') {
       const course = courses.find((item) => item.id === value);
@@ -59,6 +83,10 @@ export function PlClassesScreen() {
         courseId: value,
         courseCode: course?.courseCode || '',
         courseName: course?.courseName || '',
+        facultyName: course?.facultyName || '',
+        streamName: course?.streamName || '',
+        principalLecturerId: course?.principalLecturerId || '',
+        principalLecturerName: course?.principalLecturerName || '',
         lecturerId: course?.assignedLecturerId || '',
         lecturerName: course?.assignedLecturerName || '',
       }));
@@ -101,6 +129,10 @@ export function PlClassesScreen() {
       courseId: item.courseId || '',
       courseCode: item.courseCode || '',
       courseName: item.courseName || '',
+      facultyName: item.facultyName || '',
+      streamName: item.streamName || '',
+      principalLecturerId: item.principalLecturerId || '',
+      principalLecturerName: item.principalLecturerName || '',
       lecturerId: item.lecturerId || '',
       lecturerName: item.lecturerName || '',
       venue: item.venue || '',
@@ -136,6 +168,8 @@ export function PlClassesScreen() {
         <TextInput mode="outlined" label="Course ID" value={form.courseId} onChangeText={(value) => updateField('courseId', value)} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Course Code" value={form.courseCode} onChangeText={(value) => updateField('courseCode', value.toUpperCase())} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Course Name" value={form.courseName} onChangeText={(value) => updateField('courseName', value)} style={{ marginTop: 12 }} theme={inputTheme} />
+        <TextInput mode="outlined" label="Faculty Name" value={form.facultyName} onChangeText={(value) => updateField('facultyName', value)} style={{ marginTop: 12 }} theme={inputTheme} />
+        <TextInput mode="outlined" label="Stream / Programme" value={form.streamName} onChangeText={(value) => updateField('streamName', value)} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Lecturer UID" value={form.lecturerId} onChangeText={(value) => updateField('lecturerId', value)} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Lecturer Name" value={form.lecturerName} onChangeText={(value) => updateField('lecturerName', value)} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Venue" value={form.venue} onChangeText={(value) => updateField('venue', value)} style={{ marginTop: 12 }} theme={inputTheme} />
@@ -155,7 +189,7 @@ export function PlClassesScreen() {
             key={item.id}
             title={`${item.courseCode} - ${item.className}`}
             meta={`${item.lectureTime} - ${item.venue}`}
-            description={`Lecturer: ${item.lecturerName || 'Not assigned'}. Registered students: ${item.totalRegisteredStudents}.`}
+            description={`Lecturer: ${item.lecturerName || 'Not assigned'}. Stream: ${item.streamName || 'Not set'}. Registered students: ${item.totalRegisteredStudents}.`}
             rightNode={
               <View style={{ gap: 8 }}>
                 <GradientButton label="Edit" onPress={() => startEdit(item)} />

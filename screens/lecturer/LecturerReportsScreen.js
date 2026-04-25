@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { useAuth } from '../../src/providers/AuthProvider';
@@ -40,7 +40,8 @@ export function LecturerReportsScreen() {
   const buildInitialForm = () => {
     const firstClass = lecturerClasses[0];
     return {
-      facultyName: '',
+      facultyName: firstClass?.facultyName || user.facultyName || '',
+      streamName: firstClass?.streamName || user.streamName || '',
       classId: firstClass?.id || '',
       className: firstClass?.className || '',
       week: '',
@@ -71,6 +72,30 @@ export function LecturerReportsScreen() {
     [form.classId, lecturerClasses]
   );
 
+  useEffect(() => {
+    if (!editingId && !form.classId && lecturerClasses.length) {
+      const firstClass = lecturerClasses[0];
+      setForm({
+        facultyName: firstClass?.facultyName || user.facultyName || '',
+        streamName: firstClass?.streamName || user.streamName || '',
+        classId: firstClass?.id || '',
+        className: firstClass?.className || '',
+        week: '',
+        date: todayValue(),
+        courseName: firstClass?.courseName || '',
+        courseCode: firstClass?.courseCode || '',
+        lecturerName: user.fullName || user.name || '',
+        studentsPresent: '',
+        totalStudents: firstClass ? String(firstClass.totalRegisteredStudents || '') : '',
+        venue: firstClass?.venue || '',
+        time: firstClass?.lectureTime || '',
+        topic: '',
+        learningOutcomes: '',
+        recommendations: '',
+      });
+    }
+  }, [editingId, form.classId, lecturerClasses, user.facultyName, user.fullName, user.name, user.streamName]);
+
   const updateField = (field, value) => {
     if (field === 'classId') {
       const nextClass = lecturerClasses.find((item) => item.id === value);
@@ -80,6 +105,8 @@ export function LecturerReportsScreen() {
         className: nextClass?.className || '',
         courseName: nextClass?.courseName || '',
         courseCode: nextClass?.courseCode || '',
+        facultyName: nextClass?.facultyName || user.facultyName || '',
+        streamName: nextClass?.streamName || user.streamName || '',
         totalStudents: nextClass ? String(nextClass.totalRegisteredStudents || '') : '',
         venue: nextClass?.venue || '',
         time: nextClass?.lectureTime || '',
@@ -97,6 +124,7 @@ export function LecturerReportsScreen() {
 
   const buildPayload = () => ({
     facultyName: form.facultyName.trim(),
+    streamName: form.streamName.trim(),
     className: form.className.trim(),
     week: form.week.trim(),
     date: form.date.trim(),
@@ -136,6 +164,7 @@ export function LecturerReportsScreen() {
     setEditingId(report.id);
     setForm({
       facultyName: report.facultyName || '',
+      streamName: report.streamName || '',
       classId: report.classId || '',
       className: report.className || '',
       week: report.week || '',

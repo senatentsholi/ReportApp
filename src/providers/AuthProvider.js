@@ -3,6 +3,24 @@ import { authService } from '../../services/authService';
 
 const AuthContext = createContext(null);
 
+function mergeProfile(currentUser, payload = {}) {
+  if (!currentUser) {
+    return currentUser;
+  }
+
+  const nextRole = String(payload.role ?? currentUser.role ?? '')
+    .trim()
+    .toLowerCase();
+
+  return {
+    ...currentUser,
+    ...payload,
+    role: nextRole,
+    name: payload.name ?? payload.fullName ?? currentUser.name ?? '',
+    fullName: payload.fullName ?? payload.name ?? currentUser.fullName ?? '',
+  };
+}
+
 export function AuthProvider({ children }) {
   const [bootstrapped, setBootstrapped] = useState(false);
   const [user, setUser] = useState(null);
@@ -30,6 +48,9 @@ export function AuthProvider({ children }) {
         const registeredUser = await authService.register(payload);
         setUser(registeredUser);
         return registeredUser;
+      },
+      updateUserProfile(payload) {
+        setUser((currentUser) => mergeProfile(currentUser, payload));
       },
       async signOut() {
         await authService.signOut();

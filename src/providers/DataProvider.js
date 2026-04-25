@@ -195,7 +195,7 @@ export function DataProvider({ children }) {
         await appDataService.updateProfile(userId, payload);
         setData((current) => ({
           ...current,
-          users: replaceRecord(current.users, userId, payload),
+          users: replaceRecord(current.users, userId, { uid: userId, ...payload }),
         }));
       },
       async markNotificationRead(notificationId) {

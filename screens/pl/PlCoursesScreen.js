@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { useAuth } from '../../src/providers/AuthProvider';
@@ -36,6 +36,7 @@ export function PlCoursesScreen() {
     courseName: '',
     courseCode: '',
     facultyName: '',
+    streamName: user.streamName || '',
     assignedLecturerId: lecturers[0]?.uid || '',
     assignedLecturerName: lecturers[0]?.fullName || '',
     principalLecturerId: prls[0]?.uid || '',
@@ -51,6 +52,22 @@ export function PlCoursesScreen() {
     query,
     (item) => `${item.courseCode} ${item.courseName} ${item.assignedLecturerName} ${item.principalLecturerName}`
   );
+
+  useEffect(() => {
+    if (!editingId && (!form.assignedLecturerId || !form.principalLecturerId) && (lecturers.length || prls.length)) {
+      setForm({
+        courseName: '',
+        courseCode: '',
+        facultyName: '',
+        streamName: user.streamName || '',
+        assignedLecturerId: lecturers[0]?.uid || '',
+        assignedLecturerName: lecturers[0]?.fullName || '',
+        principalLecturerId: prls[0]?.uid || '',
+        principalLecturerName: prls[0]?.fullName || '',
+        classNames: [],
+      });
+    }
+  }, [editingId, form.assignedLecturerId, form.principalLecturerId, lecturers, prls, user.streamName]);
 
   const resetForm = () => {
     setEditingId(null);
@@ -88,6 +105,7 @@ export function PlCoursesScreen() {
       courseName: item.courseName || '',
       courseCode: item.courseCode || '',
       facultyName: item.facultyName || '',
+      streamName: item.streamName || '',
       assignedLecturerId: item.assignedLecturerId || '',
       assignedLecturerName: item.assignedLecturerName || '',
       principalLecturerId: item.principalLecturerId || '',
@@ -121,6 +139,7 @@ export function PlCoursesScreen() {
         <TextInput mode="outlined" label="Course Name" value={form.courseName} onChangeText={(value) => setForm((current) => ({ ...current, courseName: value }))} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Course Code" value={form.courseCode} onChangeText={(value) => setForm((current) => ({ ...current, courseCode: value.toUpperCase() }))} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Faculty Name" value={form.facultyName} onChangeText={(value) => setForm((current) => ({ ...current, facultyName: value }))} style={{ marginTop: 12 }} theme={inputTheme} />
+        <TextInput mode="outlined" label="Stream / Programme" value={form.streamName} onChangeText={(value) => setForm((current) => ({ ...current, streamName: value }))} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Assigned Lecturer UID" value={form.assignedLecturerId} onChangeText={(value) => setForm((current) => ({ ...current, assignedLecturerId: value }))} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="Assigned Lecturer Name" value={form.assignedLecturerName} onChangeText={(value) => setForm((current) => ({ ...current, assignedLecturerName: value }))} style={{ marginTop: 12 }} theme={inputTheme} />
         <TextInput mode="outlined" label="PRL UID" value={form.principalLecturerId} onChangeText={(value) => setForm((current) => ({ ...current, principalLecturerId: value }))} style={{ marginTop: 12 }} theme={inputTheme} />
@@ -146,7 +165,7 @@ export function PlCoursesScreen() {
             key={item.id}
             title={`${item.courseCode} - ${item.courseName}`}
             meta={`Lecturer: ${item.assignedLecturerName || 'Not assigned'}`}
-            description={`PRL: ${item.principalLecturerName || 'Not assigned'}. Classes: ${(item.classNames || []).join(', ') || 'Not yet linked'}.`}
+            description={`PRL: ${item.principalLecturerName || 'Not assigned'}. Stream: ${item.streamName || 'Not set'}. Classes: ${(item.classNames || []).join(', ') || 'Not yet linked'}.`}
             rightNode={
               <View style={{ gap: 8 }}>
                 <GradientButton label="Edit" onPress={() => beginEdit(item)} />

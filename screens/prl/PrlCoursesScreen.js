@@ -7,6 +7,7 @@ import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { SearchBar } from '../../components/common/SearchBar';
 import { SectionTitle } from '../../components/dashboard/SectionTitle';
 import { InfoCard } from '../../components/dashboard/InfoCard';
+import { EmptyState } from '../../components/common/EmptyState';
 import { getVisibleCourses } from '../../utils/appSelectors';
 
 export function PrlCoursesScreen() {
@@ -25,14 +26,18 @@ export function PrlCoursesScreen() {
       <ScreenHeader title="Courses" subtitle="Courses and lecturers under your stream" user={user} />
       <SearchBar value={query} onChangeText={setQuery} placeholder="Search course code, title, or lecturer" />
       <SectionTitle title="Stream Courses" />
-      {filtered.map((item) => (
-        <InfoCard
-          key={item.id}
-          title={`${item.courseCode} • ${item.courseName}`}
-          meta={`Lecturer: ${item.assignedLecturerName}`}
-          description={`Principal Lecturer: ${item.principalLecturerName}`}
-        />
-      ))}
+      {filtered.length ? (
+        filtered.map((item) => (
+          <InfoCard
+            key={item.id}
+            title={`${item.courseCode} - ${item.courseName}`}
+            meta={`Lecturer: ${item.assignedLecturerName}`}
+            description={`Principal Lecturer: ${item.principalLecturerName}. Stream: ${item.streamName || 'Not set'}`}
+          />
+        ))
+      ) : (
+        <EmptyState title="No courses found" description="Courses for your stream will appear here." />
+      )}
     </ScreenContainer>
   );
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../src/providers/AuthProvider';
 import { SplashScreen } from '../screens/splash/SplashScreen';
 import { AuthNavigator } from './stacks/AuthNavigator';
 import { RoleNavigator } from './tabs/RoleNavigator';
+import { ProfileScreen } from '../screens/profile/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,7 +16,10 @@ export function RootNavigator() {
       {!bootstrapped ? (
         <Stack.Screen name="Splash" component={SplashScreen} />
       ) : user ? (
-        <Stack.Screen name="RoleApp" component={RoleNavigator} />
+        <Stack.Group>
+          <Stack.Screen name="RoleApp" component={RoleNavigator} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+        </Stack.Group>
       ) : (
         <Stack.Screen name="Auth" component={AuthNavigator} />
       )}

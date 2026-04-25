@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +29,12 @@ export function StudentRatingsScreen() {
     () => data.courses.filter((item) => item.assignedLecturerId === lecturer?.uid),
     [data.courses, lecturer?.uid]
   );
+
+  useEffect(() => {
+    if (!editingId && !courseCode && lecturerCourses.length) {
+      setCourseCode(lecturerCourses[0]?.courseCode || '');
+    }
+  }, [courseCode, editingId, lecturerCourses]);
 
   const resetForm = () => {
     setEditingId(null);

@@ -1,6 +1,6 @@
-# LUCT Faculty Reporting App
+# Limkokwing Faculty Reporting App
 
-Mobile reporting application for the Faculty of Information Communication Technology at LUCT.
+Mobile reporting application for Limkokwing University of Creative Technology.
 
 ## Stack
 
@@ -30,5 +30,5 @@ cmd /c npm.cmd install
 2. Start the project:
 
 ```bash
-cmd /c npm.cmd run web
+cmd /c npm.cmd start
 ```

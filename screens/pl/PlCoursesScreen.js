@@ -90,12 +90,12 @@ export function PlCoursesScreen() {
         Alert.alert('Course updated', 'The course record has been updated.');
       } else {
         await saveCourse(payload);
-        Alert.alert('Course added', 'The new course has been added to Firestore.');
+        Alert.alert('Course added', 'The course has been added.');
       }
 
       resetForm();
     } catch (error) {
-      Alert.alert('Unable to save course', error.message || 'Please review the course form and try again.');
+      Alert.alert('Course not saved', error.message || 'Please check the form and try again.');
     }
   };
 

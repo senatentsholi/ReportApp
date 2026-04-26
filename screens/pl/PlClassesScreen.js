@@ -118,7 +118,7 @@ export function PlClassesScreen() {
 
       resetForm();
     } catch (error) {
-      Alert.alert('Unable to save class', error.message || 'Please review the class form and try again.');
+      Alert.alert('Class not saved', error.message || 'Please check the form and try again.');
     }
   };
 

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../src/providers/AuthProvider';
 import { useAppData } from '../../hooks/useAppData';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { GradientButton } from '../../components/ui/GradientButton';
-import { useThemePreference } from '../../src/providers/ThemeProvider';
 import { appTheme } from '../../src/theme';
 
 const fallbackLogo = require('../../assets/images/limkokwing-logo.jpg');
@@ -28,10 +26,8 @@ function formatRole(role) {
 }
 
 export function ProfileScreen() {
-  const navigation = useNavigation();
   const { user, signOut, updateUserProfile } = useAuth();
   const { updateProfile, uploadProfilePhoto } = useAppData();
-  const { isDarkMode, toggleDarkMode } = useThemePreference();
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [facultyName, setFacultyName] = useState(user?.facultyName || '');
   const [department, setDepartment] = useState(user?.department || '');
@@ -49,7 +45,7 @@ export function ProfileScreen() {
         setAvatarUri(nextPhoto);
       }
     } catch (error) {
-      Alert.alert('Unable to update photo', error.message || 'Please try again.');
+      Alert.alert('Photo not updated', error.message || 'Please try again.');
     } finally {
       setUploading(false);
     }
@@ -69,16 +65,15 @@ export function ProfileScreen() {
       department: department.trim(),
       streamName: streamName.trim(),
       className: className.trim(),
-      darkMode: isDarkMode,
     };
 
     try {
       setSaving(true);
       await updateProfile(user.uid, payload);
       updateUserProfile(payload);
-      Alert.alert('Profile updated', 'Your profile changes have been saved.');
+      Alert.alert('Profile updated', 'Your profile has been saved.');
     } catch (error) {
-      Alert.alert('Unable to save profile', error.message || 'Please review your profile details and try again.');
+      Alert.alert('Profile not saved', error.message || 'Please check your details and try again.');
     } finally {
       setSaving(false);
     }
@@ -86,15 +81,12 @@ export function ProfileScreen() {
 
   return (
     <ScreenContainer>
-      <Pressable onPress={() => navigation.goBack()} style={styles.backLink}>
-        <Text style={styles.backText}>Back to dashboard</Text>
-      </Pressable>
-      <ScreenHeader title="Profile" subtitle="Manage account preferences" user={user} />
+      <ScreenHeader title="Profile" user={user} />
       <GlassCard>
         <View style={styles.avatarWrap}>
           <Image source={avatarUri ? { uri: avatarUri } : fallbackLogo} style={styles.avatar} />
           <Pressable onPress={choosePhoto}>
-            <Text style={styles.link}>{uploading ? 'Opening photo library...' : 'Choose profile photo'}</Text>
+            <Text style={styles.link}>{uploading ? 'Opening photos...' : 'Choose photo'}</Text>
           </Pressable>
         </View>
         <TextInput
@@ -103,22 +95,25 @@ export function ProfileScreen() {
           value={fullName}
           onChangeText={setFullName}
           style={styles.input}
+          textColor="#FFFFFF"
           theme={{ colors: { primary: appTheme.colors.primary, outline: appTheme.colors.border, onSurface: '#FFFFFF' } }}
         />
         <TextInput
           mode="outlined"
           label="Email"
           value={user.email}
-          disabled
+          editable={false}
           style={styles.input}
+          textColor="#FFFFFF"
           theme={{ colors: { primary: appTheme.colors.primary, outline: appTheme.colors.border, onSurface: '#FFFFFF' } }}
         />
         <TextInput
           mode="outlined"
           label="Role"
           value={formatRole(user.role)}
-          disabled
+          editable={false}
           style={styles.input}
+          textColor="#FFFFFF"
           theme={{ colors: { primary: appTheme.colors.primary, outline: appTheme.colors.border, onSurface: '#FFFFFF' } }}
         />
         <TextInput
@@ -127,6 +122,7 @@ export function ProfileScreen() {
           value={facultyName}
           onChangeText={setFacultyName}
           style={styles.input}
+          textColor="#FFFFFF"
           theme={{ colors: { primary: appTheme.colors.primary, outline: appTheme.colors.border, onSurface: '#FFFFFF' } }}
         />
         <TextInput
@@ -135,6 +131,7 @@ export function ProfileScreen() {
           value={department}
           onChangeText={setDepartment}
           style={styles.input}
+          textColor="#FFFFFF"
           theme={{ colors: { primary: appTheme.colors.primary, outline: appTheme.colors.border, onSurface: '#FFFFFF' } }}
         />
         <TextInput
@@ -143,6 +140,7 @@ export function ProfileScreen() {
           value={streamName}
           onChangeText={setStreamName}
           style={styles.input}
+          textColor="#FFFFFF"
           theme={{ colors: { primary: appTheme.colors.primary, outline: appTheme.colors.border, onSurface: '#FFFFFF' } }}
         />
         <TextInput
@@ -151,12 +149,9 @@ export function ProfileScreen() {
           value={className}
           onChangeText={setClassName}
           style={styles.input}
+          textColor="#FFFFFF"
           theme={{ colors: { primary: appTheme.colors.primary, outline: appTheme.colors.border, onSurface: '#FFFFFF' } }}
         />
-        <View style={styles.row}>
-          <Text style={styles.label}>Dark Mode</Text>
-          <Switch value={isDarkMode} onValueChange={toggleDarkMode} />
-        </View>
         <GradientButton label={saving ? 'Saving Profile...' : 'Save Profile'} onPress={saveProfile} />
         <Pressable style={styles.logoutButton} onPress={signOut}>
           <Text style={styles.logoutText}>Logout</Text>
@@ -172,14 +167,6 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
-  backLink: {
-    alignSelf: 'flex-start',
-    marginBottom: 12,
-  },
-  backText: {
-    color: appTheme.colors.accent,
-    fontWeight: '800',
-  },
   avatar: {
     width: 88,
     height: 88,
@@ -193,16 +180,6 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: 'transparent',
     marginBottom: 14,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  label: {
-    color: '#FFFFFF',
-    fontWeight: '700',
   },
   logoutButton: {
     marginTop: 12,

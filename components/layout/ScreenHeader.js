@@ -21,7 +21,7 @@ function formatRole(role) {
   return normalizedRole ? normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1) : '';
 }
 
-export function ScreenHeader({ title, subtitle, user, unreadCount = 0 }) {
+export function ScreenHeader({ title, user, unreadCount = 0 }) {
   const { data, markNotificationRead } = useAppData();
   const navigation = useNavigation();
 
@@ -68,7 +68,7 @@ export function ScreenHeader({ title, subtitle, user, unreadCount = 0 }) {
         </Pressable>
         <View style={styles.copy}>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle || formatRole(user?.role)}</Text>
+          <Text style={styles.subtitle}>{formatRole(user?.role)}</Text>
         </View>
       </View>
       <Pressable style={styles.bellWrap} onPress={openNotifications}>

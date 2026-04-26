@@ -22,7 +22,15 @@ export function getUserClassRecords(classes, courses, user) {
   if (!user) return [];
 
   if (user.role === 'student') {
-    return classes.filter((item) => item.className === user.className);
+    if (user.className) {
+      return classes.filter((item) => item.className === user.className);
+    }
+
+    if (user.streamName) {
+      return classes.filter((item) => item.streamName === user.streamName);
+    }
+
+    return classes;
   }
 
   if (user.role === 'lecturer') {
@@ -31,7 +39,7 @@ export function getUserClassRecords(classes, courses, user) {
   }
 
   if (user.role === 'prl') {
-    return classes.filter((item) => !item.principalLecturerId || item.principalLecturerId === user.uid);
+    return classes.filter((item) => item.principalLecturerId === user.uid || item.streamName === user.streamName);
   }
 
   return classes;
@@ -41,7 +49,15 @@ export function getVisibleReports(reports, classes, courses, user) {
   if (!user) return [];
 
   if (user.role === 'student') {
-    return sortByNewest(reports.filter((report) => report.className === user.className));
+    if (user.className) {
+      return sortByNewest(reports.filter((report) => report.className === user.className));
+    }
+
+    if (user.streamName) {
+      return sortByNewest(reports.filter((report) => report.streamName === user.streamName));
+    }
+
+    return sortByNewest(reports);
   }
 
   if (user.role === 'lecturer') {
@@ -51,7 +67,7 @@ export function getVisibleReports(reports, classes, courses, user) {
   if (user.role === 'prl') {
     const courseIds = courses.filter((course) => course.principalLecturerId === user.uid).map((course) => course.id);
     const classIds = classes.filter((item) => courseIds.includes(item.courseId)).map((item) => item.id);
-    return sortByNewest(reports.filter((report) => classIds.includes(report.classId)));
+    return sortByNewest(reports.filter((report) => classIds.includes(report.classId) || report.streamName === user.streamName));
   }
 
   return sortByNewest(reports);
@@ -65,7 +81,7 @@ export function getVisibleCourses(courses, user) {
   }
 
   if (user.role === 'prl') {
-    return courses.filter((course) => course.principalLecturerId === user.uid);
+    return courses.filter((course) => course.principalLecturerId === user.uid || course.streamName === user.streamName);
   }
 
   return courses;
@@ -83,6 +99,10 @@ export function getVisibleAttendance(attendance, classes, user) {
     return sortByNewest(attendance.filter((entry) => classIds.includes(entry.classId)), 'date');
   }
 
+  if (user.role === 'prl') {
+    return sortByNewest(attendance.filter((entry) => entry.streamName === user.streamName), 'date');
+  }
+
   return sortByNewest(attendance, 'date');
 }
 
@@ -97,6 +117,10 @@ export function getVisibleRatings(ratings, user) {
     return sortByNewest(ratings.filter((rating) => rating.lecturerId === user.uid));
   }
 
+  if (user.role === 'prl') {
+    return sortByNewest(ratings.filter((rating) => rating.streamName === user.streamName));
+  }
+
   return sortByNewest(ratings);
 }
 
@@ -104,11 +128,23 @@ export function getVisibleMonitoring(monitoring, user) {
   if (!user) return [];
 
   if (user.role === 'student') {
-    return sortByNewest(monitoring.filter((item) => item.className === user.className));
+    if (user.className) {
+      return sortByNewest(monitoring.filter((item) => item.className === user.className));
+    }
+
+    if (user.streamName) {
+      return sortByNewest(monitoring.filter((item) => item.streamName === user.streamName));
+    }
+
+    return sortByNewest(monitoring);
   }
 
   if (user.role === 'lecturer') {
     return sortByNewest(monitoring.filter((item) => item.ownerId === user.uid));
+  }
+
+  if (user.role === 'prl') {
+    return sortByNewest(monitoring.filter((item) => item.streamName === user.streamName));
   }
 
   return sortByNewest(monitoring);

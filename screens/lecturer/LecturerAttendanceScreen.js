@@ -90,17 +90,28 @@ export function LecturerAttendanceScreen() {
 
   const handleSave = async () => {
     try {
+      const payload = {
+        ...form,
+        lecturerId: user.uid,
+        lecturerName: user.fullName || user.name || '',
+        facultyName: selectedClass?.facultyName || '',
+        streamName: selectedClass?.streamName || '',
+        courseId: selectedClass?.courseId || '',
+        courseCode: selectedClass?.courseCode || '',
+        courseName: selectedClass?.courseName || '',
+      };
+
       if (editingId) {
-        await updateAttendance(editingId, form);
+        await updateAttendance(editingId, payload);
         Alert.alert('Attendance updated', 'Attendance has been updated for the selected class.');
       } else {
-        await saveAttendance(form);
-        Alert.alert('Attendance saved', 'Attendance has been recorded for the selected class.');
+        await saveAttendance(payload);
+        Alert.alert('Attendance saved', 'Attendance has been recorded.');
       }
 
       resetForm();
     } catch (error) {
-      Alert.alert('Unable to save attendance', error.message || 'Please review the attendance form and try again.');
+      Alert.alert('Attendance not saved', error.message || 'Please check the form and try again.');
     }
   };
 
@@ -111,7 +122,7 @@ export function LecturerAttendanceScreen() {
       studentName: item.studentName,
       classId: item.classId,
       className: item.className,
-      lecturerId: item.lecturerId,
+      lecturerId: item.lecturerId || user.uid,
       date: item.date,
       status: item.status,
     });

@@ -35,11 +35,11 @@ export function PlReportsScreen() {
             key={item.id}
             title={`${item.courseCode} - ${item.courseName}`}
             meta={`${item.lecturerName} - ${item.week}`}
-            description={`Class: ${item.className}. Topic: ${item.topic}. PRL feedback: ${item.feedback || 'Not yet added'}`}
+            description={`Class: ${item.className}. Topic: ${item.topic}. Feedback: ${item.feedback || 'Not yet added'}`}
           />
         ))
       ) : (
-        <EmptyState title="No reports found" description="Reviewed reports will appear here for faculty oversight." />
+        <EmptyState title="No reports yet" />
       )}
     </ScreenContainer>
   );

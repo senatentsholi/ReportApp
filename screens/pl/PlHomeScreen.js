@@ -17,16 +17,16 @@ export function PlHomeScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Program Leader" subtitle="Faculty management dashboard" user={user} />
+      <ScreenHeader title="Program Leader" user={user} />
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <StatCard label="Courses" value={String(courses.length)} />
         <StatCard label="Reports" value={String(reports.length)} colors={['rgba(155,92,255,0.34)', 'rgba(63,169,245,0.18)']} />
       </View>
-      <SectionTitle title="Operational Snapshot" caption="Recent faculty management activity" />
+      <SectionTitle title="Operational Snapshot" />
       {courses.slice(0, 3).map((item) => (
         <InfoCard
           key={item.id}
-          title={`${item.courseCode} • ${item.courseName}`}
+          title={`${item.courseCode} - ${item.courseName}`}
           meta={`Lecturer: ${item.assignedLecturerName}`}
           description={`Principal Lecturer: ${item.principalLecturerName}`}
         />

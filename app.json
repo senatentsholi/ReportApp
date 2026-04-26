@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.senatentsholi.limkokwingreports",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/limkokwing-logo.jpg",
@@ -36,6 +37,12 @@
     ],
     "experiments": {
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b069a79e-ea95-48c4-9367-b13020296dad"
+      }
+    },
+    "owner": "senatentsoli"
   }
 }

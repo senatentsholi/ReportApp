@@ -138,6 +138,7 @@ export function LecturerReportsScreen() {
     topic: form.topic.trim(),
     learningOutcomes: form.learningOutcomes.trim(),
     recommendations: form.recommendations.trim(),
+    lecturerId: user.uid,
     createdBy: user.uid,
     classId: form.classId || '',
   });
@@ -151,12 +152,12 @@ export function LecturerReportsScreen() {
         Alert.alert('Report updated', 'The report has been updated successfully.');
       } else {
         await saveReport(payload);
-        Alert.alert('Report submitted', 'The report has been saved to Firestore.');
+        Alert.alert('Report submitted', 'Your report has been submitted.');
       }
 
       resetForm();
     } catch (error) {
-      Alert.alert('Unable to save report', error.message || 'Please review the report form and try again.');
+      Alert.alert('Report not saved', error.message || 'Please check the form and try again.');
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { AppBackground } from '../../components/common/AppBackground';
 import { AppLogo } from '../../components/common/AppLogo';
@@ -57,39 +57,47 @@ export function RegisterScreen({ navigation }) {
 
   return (
     <AppBackground>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <AppLogo />
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Register and store your role in Firebase Authentication and Firestore.</Text>
-        </View>
-
-        <GlassCard>
-          <Text style={styles.sectionLabel}>Register As</Text>
-          <AuthRoleSelector value={form.role} onChange={(value) => updateField('role', value)} />
-
-          <View style={styles.form}>
-            <TextInput mode="outlined" label="Full Name" value={form.fullName} onChangeText={(value) => updateField('fullName', value)} style={styles.input} theme={inputTheme} />
-            <TextInput mode="outlined" label="Email" value={form.email} onChangeText={(value) => updateField('email', value)} autoCapitalize="none" keyboardType="email-address" style={styles.input} theme={inputTheme} />
-            <TextInput mode="outlined" label="Password" value={form.password} onChangeText={(value) => updateField('password', value)} secureTextEntry style={styles.input} theme={inputTheme} />
-            <TextInput mode="outlined" label="Confirm Password" value={form.confirmPassword} onChangeText={(value) => updateField('confirmPassword', value)} secureTextEntry style={styles.input} theme={inputTheme} />
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        >
+          <View style={styles.header}>
+            <AppLogo />
+            <Text style={styles.title}>Create Account</Text>
           </View>
 
-          <GradientButton label={loading ? 'Creating...' : 'Create Account'} onPress={handleRegister} />
+          <GlassCard>
+            <Text style={styles.sectionLabel}>Role</Text>
+            <AuthRoleSelector value={form.role} onChange={(value) => updateField('role', value)} />
 
-          <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Already have an account?</Text>
-            <Text style={styles.footerLink} onPress={() => navigation.goBack()}>
-              Login
-            </Text>
-          </View>
-        </GlassCard>
-      </ScrollView>
+            <View style={styles.form}>
+              <TextInput mode="outlined" label="Full Name" value={form.fullName} onChangeText={(value) => updateField('fullName', value)} style={styles.input} theme={inputTheme} />
+              <TextInput mode="outlined" label="Email" value={form.email} onChangeText={(value) => updateField('email', value)} autoCapitalize="none" keyboardType="email-address" style={styles.input} theme={inputTheme} />
+              <TextInput mode="outlined" label="Password" value={form.password} onChangeText={(value) => updateField('password', value)} secureTextEntry style={styles.input} theme={inputTheme} />
+              <TextInput mode="outlined" label="Confirm Password" value={form.confirmPassword} onChangeText={(value) => updateField('confirmPassword', value)} secureTextEntry style={styles.input} theme={inputTheme} />
+            </View>
+
+            <GradientButton label={loading ? 'Creating...' : 'Create Account'} onPress={handleRegister} />
+
+            <View style={styles.footerRow}>
+              <Text style={styles.footerLink} onPress={() => navigation.goBack()}>
+                Login
+              </Text>
+            </View>
+          </GlassCard>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </AppBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     padding: 20,
     paddingTop: 64,
@@ -103,11 +111,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 30,
     fontWeight: '900',
-  },
-  subtitle: {
-    color: appTheme.colors.textMuted,
-    fontSize: 14,
-    lineHeight: 22,
   },
   sectionLabel: {
     color: '#FFFFFF',
@@ -125,13 +128,9 @@ const styles = StyleSheet.create({
   },
   footerRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     gap: 6,
     marginTop: 16,
-  },
-  footerText: {
-    color: appTheme.colors.textMuted,
-    fontWeight: '600',
   },
   footerLink: {
     color: appTheme.colors.accent,

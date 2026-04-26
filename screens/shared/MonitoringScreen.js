@@ -13,7 +13,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { GradientButton } from '../../components/ui/GradientButton';
 import { appTheme } from '../../src/theme';
-import { getVisibleMonitoring } from '../../utils/appSelectors';
+import { getUserClassRecords, getVisibleMonitoring } from '../../utils/appSelectors';
 
 const inputTheme = {
   colors: {
@@ -37,6 +37,8 @@ export function MonitoringScreen() {
   });
 
   const isEditableRole = user.role !== 'student';
+  const classRecords = getUserClassRecords(data.classes, data.courses, user);
+  const defaultClass = classRecords[0];
   const visibleMonitoring = getVisibleMonitoring(data.monitoring, user);
   const filtered = useSearch(
     visibleMonitoring,
@@ -60,9 +62,9 @@ export function MonitoringScreen() {
         ...form,
         ownerId: user.uid,
         ownerRole: user.role,
-        facultyName: user.facultyName || user.department,
-        streamName: user.streamName || '',
-        className: user.className || '',
+        facultyName: defaultClass?.facultyName || user.facultyName || user.department || '',
+        streamName: defaultClass?.streamName || user.streamName || '',
+        className: defaultClass?.className || user.className || '',
       };
 
       if (editingId) {
@@ -75,7 +77,7 @@ export function MonitoringScreen() {
 
       resetForm();
     } catch (error) {
-      Alert.alert('Unable to save monitoring note', error.message || 'Please review the form and try again.');
+      Alert.alert('Monitoring not saved', error.message || 'Please check the form and try again.');
     }
   };
 

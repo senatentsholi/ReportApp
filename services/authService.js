@@ -38,14 +38,14 @@ async function syncProfileDocument({ uid, email, fullName, role }) {
   const snapshot = await getDoc(profileRef);
 
   if (!snapshot.exists()) {
-    throw new Error('User profile was not found in Firestore.');
+    throw new Error('Your account details could not be found.');
   }
 
   const profile = snapshot.data();
   const normalizedRole = normalizeRole(profile.role || role);
 
   if (!normalizedRole) {
-    throw new Error('User role is missing from the Firestore profile.');
+    throw new Error('Your account role is missing.');
   }
 
   const patch = {};

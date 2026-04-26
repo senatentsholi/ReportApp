@@ -4,6 +4,7 @@ import { TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/providers/AuthProvider';
 import { useAppData } from '../../hooks/useAppData';
+import { useSearch } from '../../hooks/useSearch';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -11,67 +12,88 @@ import { GradientButton } from '../../components/ui/GradientButton';
 import { SectionTitle } from '../../components/dashboard/SectionTitle';
 import { InfoCard } from '../../components/dashboard/InfoCard';
 import { EmptyState } from '../../components/common/EmptyState';
+import { SearchBar } from '../../components/common/SearchBar';
 import { appTheme } from '../../src/theme';
-import { getVisibleRatings } from '../../utils/appSelectors';
+import { getUserClassRecords, getVisibleRatings } from '../../utils/appSelectors';
 
 export function StudentRatingsScreen() {
   const { user } = useAuth();
   const { data, saveRating, updateRating, deleteRating } = useAppData();
-  const lecturers = data.users.filter((item) => item.role === 'lecturer');
-  const lecturer = lecturers[0];
+  const [query, setQuery] = useState('');
+  const classRecords = useMemo(() => getUserClassRecords(data.classes, data.courses, user), [data.classes, data.courses, user]);
+  const studentCourses = useMemo(
+    () =>
+      data.courses.filter((course) =>
+        classRecords.some((classRecord) => classRecord.courseId === course.id || classRecord.courseCode === course.courseCode)
+      ),
+    [classRecords, data.courses]
+  );
   const ratings = getVisibleRatings(data.ratings, user);
   const [editingId, setEditingId] = useState(null);
   const [stars, setStars] = useState(4);
   const [comment, setComment] = useState('');
   const [courseCode, setCourseCode] = useState('');
-
-  const lecturerCourses = useMemo(
-    () => data.courses.filter((item) => item.assignedLecturerId === lecturer?.uid),
-    [data.courses, lecturer?.uid]
+  const filteredRatings = useSearch(
+    ratings,
+    query,
+    (item) => `${item.lecturerName} ${item.courseCode} ${item.comment} ${item.stars}`
   );
+  const selectedCourse = useMemo(
+    () => studentCourses.find((item) => item.courseCode === courseCode) || studentCourses[0] || null,
+    [courseCode, studentCourses]
+  );
+  const lecturer = useMemo(() => {
+    if (selectedCourse?.assignedLecturerId) {
+      return data.users.find((item) => item.uid === selectedCourse.assignedLecturerId) || null;
+    }
+
+    return data.users.find((item) => item.role === 'lecturer' && item.fullName === selectedCourse?.assignedLecturerName) || null;
+  }, [data.users, selectedCourse]);
 
   useEffect(() => {
-    if (!editingId && !courseCode && lecturerCourses.length) {
-      setCourseCode(lecturerCourses[0]?.courseCode || '');
+    if (!editingId && !courseCode && studentCourses.length) {
+      setCourseCode(studentCourses[0]?.courseCode || '');
     }
-  }, [courseCode, editingId, lecturerCourses]);
+  }, [courseCode, editingId, studentCourses]);
 
   const resetForm = () => {
     setEditingId(null);
     setStars(4);
     setComment('');
-    setCourseCode(lecturerCourses[0]?.courseCode || '');
+    setCourseCode(studentCourses[0]?.courseCode || '');
   };
 
   const submitRating = async () => {
-    if (!lecturer) {
-      Alert.alert('Lecturer not found', 'Create a lecturer account first so ratings can be linked correctly.');
+    if (!selectedCourse || !lecturer) {
+      Alert.alert('Course not ready', 'Make sure your class has an assigned course and lecturer before submitting a rating.');
       return;
     }
 
     const payload = {
       studentId: user.uid,
-      studentName: user.fullName,
+      studentName: user.fullName || user.name || '',
       lecturerId: lecturer.uid,
-      lecturerName: lecturer.fullName,
-      className: user.className || '',
-      courseCode,
+      lecturerName: lecturer.fullName || lecturer.name || '',
+      facultyName: selectedCourse.facultyName || '',
+      streamName: selectedCourse.streamName || user.streamName || '',
+      className: classRecords.find((item) => item.courseId === selectedCourse.id || item.courseCode === selectedCourse.courseCode)?.className || user.className || '',
+      courseCode: selectedCourse.courseCode,
       stars,
-      comment,
+      comment: comment.trim(),
     };
 
     try {
       if (editingId) {
         await updateRating(editingId, payload);
-        Alert.alert('Rating updated', 'Your rating has been updated successfully.');
+        Alert.alert('Rating updated', 'Your rating has been updated.');
       } else {
         await saveRating(payload);
-        Alert.alert('Rating saved', 'Your lecturer evaluation has been submitted.');
+        Alert.alert('Rating submitted', 'Your rating has been submitted.');
       }
 
       resetForm();
     } catch (error) {
-      Alert.alert('Unable to save rating', error.message || 'Please review the rating form and try again.');
+      Alert.alert('Rating not saved', error.message || 'Please check the form and try again.');
     }
   };
 
@@ -100,9 +122,9 @@ export function StudentRatingsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Ratings" subtitle="Evaluate your lecturer professionally" user={user} />
+      <ScreenHeader title="Ratings" user={user} />
       <GlassCard>
-        <SectionTitle title={editingId ? 'Update Rating' : 'Rate Lecturer'} caption="Share clear and professional feedback" />
+        <SectionTitle title={editingId ? 'Update Rating' : 'Rate Lecturer'} />
         <TextInput
           mode="outlined"
           label="Course Code"
@@ -133,9 +155,10 @@ export function StudentRatingsScreen() {
         </View>
       </GlassCard>
 
-      <SectionTitle title="My Rating History" caption={lecturerCourses.length ? `Lecturer modules: ${lecturerCourses.map((item) => item.courseCode).join(', ')}` : 'Saved rating history'} />
-      {ratings.length ? (
-        ratings.map((rating) => (
+      <SearchBar value={query} onChangeText={setQuery} placeholder="Search ratings" />
+      <SectionTitle title="My Rating History" />
+      {filteredRatings.length ? (
+        filteredRatings.map((rating) => (
           <InfoCard
             key={rating.id}
             title={`${rating.lecturerName} - ${rating.courseCode}`}
@@ -150,7 +173,7 @@ export function StudentRatingsScreen() {
           />
         ))
       ) : (
-        <EmptyState title="No ratings yet" description="Your lecturer ratings will appear here after submission." />
+        <EmptyState title="No ratings yet" />
       )}
     </ScreenContainer>
   );

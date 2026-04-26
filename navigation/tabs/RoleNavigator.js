@@ -8,17 +8,21 @@ import { StudentHomeScreen } from '../../screens/student/StudentHomeScreen';
 import { StudentAttendanceScreen } from '../../screens/student/StudentAttendanceScreen';
 import { StudentMonitoringScreen } from '../../screens/student/StudentMonitoringScreen';
 import { StudentRatingsScreen } from '../../screens/student/StudentRatingsScreen';
+import { LecturerHomeScreen } from '../../screens/lecturer/LecturerHomeScreen';
 import { LecturerClassesScreen } from '../../screens/lecturer/LecturerClassesScreen';
 import { LecturerReportsScreen } from '../../screens/lecturer/LecturerReportsScreen';
 import { LecturerAttendanceScreen } from '../../screens/lecturer/LecturerAttendanceScreen';
+import { PrlHomeScreen } from '../../screens/prl/PrlHomeScreen';
 import { PrlCoursesScreen } from '../../screens/prl/PrlCoursesScreen';
 import { PrlReportsScreen } from '../../screens/prl/PrlReportsScreen';
+import { PlHomeScreen } from '../../screens/pl/PlHomeScreen';
 import { PlCoursesScreen } from '../../screens/pl/PlCoursesScreen';
 import { PlReportsScreen } from '../../screens/pl/PlReportsScreen';
 import { MonitoringScreen } from '../../screens/shared/MonitoringScreen';
 import { RatingsOverviewScreen } from '../../screens/shared/RatingsOverviewScreen';
 import { PrlClassesScreen } from '../../screens/prl/PrlClassesScreen';
 import { PlClassesScreen } from '../../screens/pl/PlClassesScreen';
+import { ProfileScreen } from '../../screens/profile/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,27 +32,34 @@ const roleTabMap = {
     { name: 'Monitoring', icon: 'pulse-outline', component: StudentMonitoringScreen },
     { name: 'Ratings', icon: 'star-outline', component: StudentRatingsScreen },
     { name: 'Attendance', icon: 'calendar-outline', component: StudentAttendanceScreen },
+    { name: 'Profile', icon: 'person-outline', component: ProfileScreen },
   ],
   lecturer: [
+    { name: 'Home', icon: 'home-outline', component: LecturerHomeScreen },
     { name: 'Classes', icon: 'library-outline', component: LecturerClassesScreen },
     { name: 'Reports', icon: 'document-text-outline', component: LecturerReportsScreen },
     { name: 'Monitoring', icon: 'analytics-outline', component: MonitoringScreen },
     { name: 'Ratings', icon: 'star-outline', component: RatingsOverviewScreen },
     { name: 'Attendance', icon: 'people-outline', component: LecturerAttendanceScreen },
+    { name: 'Profile', icon: 'person-outline', component: ProfileScreen },
   ],
   prl: [
+    { name: 'Home', icon: 'home-outline', component: PrlHomeScreen },
     { name: 'Courses', icon: 'book-outline', component: PrlCoursesScreen },
     { name: 'Reports', icon: 'documents-outline', component: PrlReportsScreen },
     { name: 'Monitoring', icon: 'analytics-outline', component: MonitoringScreen },
     { name: 'Ratings', icon: 'star-outline', component: RatingsOverviewScreen },
     { name: 'Classes', icon: 'layers-outline', component: PrlClassesScreen },
+    { name: 'Profile', icon: 'person-outline', component: ProfileScreen },
   ],
   pl: [
+    { name: 'Home', icon: 'home-outline', component: PlHomeScreen },
     { name: 'Courses', icon: 'briefcase-outline', component: PlCoursesScreen },
     { name: 'Classes', icon: 'layers-outline', component: PlClassesScreen },
     { name: 'Reports', icon: 'documents-outline', component: PlReportsScreen },
     { name: 'Monitoring', icon: 'analytics-outline', component: MonitoringScreen },
     { name: 'Ratings', icon: 'star-outline', component: RatingsOverviewScreen },
+    { name: 'Profile', icon: 'person-outline', component: ProfileScreen },
   ],
 };
 

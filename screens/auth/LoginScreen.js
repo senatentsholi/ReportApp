@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { AppBackground } from '../../components/common/AppBackground';
 import { AppLogo } from '../../components/common/AppLogo';
@@ -45,55 +45,63 @@ export function LoginScreen({ navigation }) {
 
   return (
     <AppBackground>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <AppLogo />
-          <Text style={styles.welcome}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in with your Firebase account to continue.</Text>
-        </View>
-
-        <GlassCard>
-          <Text style={styles.sectionLabel}>Select Login Role</Text>
-          <AuthRoleSelector value={role} onChange={setRole} />
-
-          <View style={styles.form}>
-            <TextInput
-              mode="outlined"
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              style={styles.input}
-              theme={inputTheme}
-            />
-            <TextInput
-              mode="outlined"
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={secure}
-              style={styles.input}
-              theme={inputTheme}
-              right={<TextInput.Icon icon={secure ? 'eye-off' : 'eye'} onPress={() => setSecure((current) => !current)} />}
-            />
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        >
+          <View style={styles.header}>
+            <AppLogo />
+            <Text style={styles.welcome}>Welcome Back</Text>
           </View>
 
-          <GradientButton label={loading ? 'Signing In...' : 'Login'} onPress={handleLogin} />
+          <GlassCard>
+            <Text style={styles.sectionLabel}>Role</Text>
+            <AuthRoleSelector value={role} onChange={setRole} />
 
-          <View style={styles.linkRow}>
-            <Text style={styles.linkMuted}>Use the same role you selected when registering.</Text>
-            <Text style={styles.linkAccent} onPress={() => navigation.navigate('Register')}>
-              Register
-            </Text>
-          </View>
-        </GlassCard>
-      </ScrollView>
+            <View style={styles.form}>
+              <TextInput
+                mode="outlined"
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                style={styles.input}
+                theme={inputTheme}
+              />
+              <TextInput
+                mode="outlined"
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={secure}
+                style={styles.input}
+                theme={inputTheme}
+                right={<TextInput.Icon icon={secure ? 'eye-off' : 'eye'} onPress={() => setSecure((current) => !current)} />}
+              />
+            </View>
+
+            <GradientButton label={loading ? 'Signing In...' : 'Login'} onPress={handleLogin} />
+
+            <View style={styles.linkRow}>
+              <Text style={styles.linkAccent} onPress={() => navigation.navigate('Register')}>
+                Register
+              </Text>
+            </View>
+          </GlassCard>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </AppBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     padding: 20,
     paddingTop: 72,
@@ -107,11 +115,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 30,
     fontWeight: '900',
-  },
-  subtitle: {
-    color: appTheme.colors.textMuted,
-    fontSize: 14,
-    lineHeight: 22,
   },
   sectionLabel: {
     color: '#FFFFFF',
@@ -129,14 +132,9 @@ const styles = StyleSheet.create({
   },
   linkRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginTop: 16,
     gap: 12,
-  },
-  linkMuted: {
-    color: appTheme.colors.textMuted,
-    fontWeight: '600',
-    flex: 1,
   },
   linkAccent: {
     color: appTheme.colors.accent,

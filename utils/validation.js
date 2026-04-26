@@ -20,6 +20,7 @@ export function validateReport(payload) {
     'date',
     'courseName',
     'courseCode',
+    'lecturerId',
     'lecturerName',
     'topic',
     'learningOutcomes',
@@ -62,7 +63,7 @@ export function validateClassRecord(payload) {
 }
 
 export function validateAttendance(payload) {
-  requireFields(payload, ['studentId', 'studentName', 'classId', 'className', 'date', 'status']);
+  requireFields(payload, ['studentId', 'studentName', 'classId', 'className', 'lecturerId', 'date', 'status']);
 
   if (!validAttendanceStates.includes(payload.status)) {
     throw new Error('Attendance status must be Present, Late, or Absent.');

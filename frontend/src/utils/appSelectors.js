@@ -1,0 +1,289 @@
+function getDateValue(value) {
+  if (!value) {
+    return 0;
+  }
+
+  if (typeof value?.toDate === 'function') {
+    return value.toDate().getTime();
+  }
+
+  if (typeof value === 'object' && typeof value.seconds === 'number') {
+    return value.seconds * 1000;
+  }
+
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function sortByNewest(items, field = 'createdAt') {
+  return [...items].sort((a, b) => getDateValue(b[field]) - getDateValue(a[field]));
+}
+
+function groupCount(items, keyBuilder) {
+  return items.reduce((accumulator, item) => {
+    const key = keyBuilder(item);
+    accumulator[key] = (accumulator[key] || 0) + 1;
+    return accumulator;
+  }, {});
+}
+
+function withFallback(items, filteredItems) {
+  return filteredItems.length ? filteredItems : items;
+}
+
+export function getUnreadNotifications(notifications, userId) {
+  return notifications.filter((item) => item.userId === userId && !item.read);
+}
+
+export function getVisibleNotifications(notifications, userId) {
+  return sortByNewest(notifications.filter((item) => item.userId === userId));
+}
+
+export function getUserClassRecords(classes, courses, user) {
+  if (!user) return [];
+
+  if (user.role === 'student') {
+    if (user.className) {
+      return withFallback(classes, classes.filter((item) => item.className === user.className));
+    }
+
+    if (user.streamName) {
+      return withFallback(classes, classes.filter((item) => item.streamName === user.streamName));
+    }
+
+    return classes;
+  }
+
+  if (user.role === 'lecturer') {
+    const courseIds = courses.filter((course) => course.assignedLecturerId === user.uid).map((course) => course.id);
+    return withFallback(
+      classes,
+      classes.filter((item) => courseIds.includes(item.courseId) || item.lecturerId === user.uid)
+    );
+  }
+
+  if (user.role === 'prl') {
+    return withFallback(
+      classes,
+      classes.filter((item) => item.principalLecturerId === user.uid || item.streamName === user.streamName)
+    );
+  }
+
+  return classes;
+}
+
+export function getVisibleReports(reports, classes, courses, user) {
+  if (!user) return [];
+
+  if (user.role === 'student') {
+    if (user.className) {
+      return sortByNewest(withFallback(reports, reports.filter((report) => report.className === user.className)));
+    }
+
+    if (user.streamName) {
+      return sortByNewest(withFallback(reports, reports.filter((report) => report.streamName === user.streamName)));
+    }
+
+    return sortByNewest(reports);
+  }
+
+  if (user.role === 'lecturer') {
+    return sortByNewest(withFallback(
+      reports,
+      reports.filter(
+        (report) =>
+          report.createdBy === user.uid ||
+          report.lecturerId === user.uid ||
+          (user.streamName && report.streamName === user.streamName) ||
+          (user.facultyName && report.facultyName === user.facultyName)
+      )
+    ));
+  }
+
+  if (user.role === 'prl') {
+    const courseIds = courses.filter((course) => course.principalLecturerId === user.uid).map((course) => course.id);
+    const classIds = classes.filter((item) => courseIds.includes(item.courseId)).map((item) => item.id);
+    return sortByNewest(
+      withFallback(
+        reports,
+        reports.filter((report) => classIds.includes(report.classId) || report.streamName === user.streamName)
+      )
+    );
+  }
+
+  return sortByNewest(reports);
+}
+
+export function getStudentsForClass(users, classRecord) {
+  return users.filter((user) => {
+    if (user.role !== 'student') {
+      return false;
+    }
+
+    if (classRecord?.className && user.className === classRecord.className) {
+      return true;
+    }
+
+    if (classRecord?.streamName && user.streamName === classRecord.streamName) {
+      return true;
+    }
+
+    return false;
+  });
+}
+
+export function getVisibleCourses(courses, user) {
+  if (!user) return [];
+
+  if (user.role === 'lecturer') {
+    return withFallback(courses, courses.filter((course) => course.assignedLecturerId === user.uid));
+  }
+
+  if (user.role === 'prl') {
+    return withFallback(
+      courses,
+      courses.filter((course) => course.principalLecturerId === user.uid || course.streamName === user.streamName)
+    );
+  }
+
+  return courses;
+}
+
+export function getVisibleAttendance(attendance, classes, user) {
+  if (!user) return [];
+
+  if (user.role === 'student') {
+    return sortByNewest(attendance.filter((entry) => entry.studentId === user.uid), 'date');
+  }
+
+  if (user.role === 'lecturer') {
+    const classIds = classes.map((item) => item.id);
+    return sortByNewest(attendance.filter((entry) => classIds.includes(entry.classId)), 'date');
+  }
+
+  if (user.role === 'prl') {
+    return sortByNewest(
+      withFallback(attendance, attendance.filter((entry) => entry.streamName === user.streamName)),
+      'date'
+    );
+  }
+
+  return sortByNewest(attendance, 'date');
+}
+
+export function getVisibleRatings(ratings, user) {
+  if (!user) return [];
+
+  if (user.role === 'student') {
+    return sortByNewest(ratings.filter((rating) => rating.studentId === user.uid));
+  }
+
+  if (user.role === 'lecturer') {
+    return sortByNewest(withFallback(ratings, ratings.filter((rating) => rating.lecturerId === user.uid)));
+  }
+
+  if (user.role === 'prl') {
+    return sortByNewest(withFallback(ratings, ratings.filter((rating) => rating.streamName === user.streamName)));
+  }
+
+  return sortByNewest(ratings);
+}
+
+export function getVisibleMonitoring(monitoring, user) {
+  if (!user) return [];
+
+  if (user.role === 'student') {
+    if (user.className) {
+      return sortByNewest(withFallback(monitoring, monitoring.filter((item) => item.className === user.className)));
+    }
+
+    if (user.streamName) {
+      return sortByNewest(withFallback(monitoring, monitoring.filter((item) => item.streamName === user.streamName)));
+    }
+
+    return sortByNewest(monitoring);
+  }
+
+  if (user.role === 'lecturer') {
+    return sortByNewest(
+      withFallback(
+        monitoring,
+        monitoring.filter(
+        (item) => item.ownerId === user.uid || (user.streamName && item.streamName === user.streamName)
+      )
+      )
+    );
+  }
+
+  if (user.role === 'prl') {
+    return sortByNewest(withFallback(monitoring, monitoring.filter((item) => item.streamName === user.streamName)));
+  }
+
+  return sortByNewest(monitoring);
+}
+
+export function getLatestFeedbackForReport(feedbackItems, reportId) {
+  return sortByNewest(feedbackItems.filter((item) => item.reportId === reportId))[0] || null;
+}
+
+export function buildDashboardMetrics({ reports, attendance, ratings, classes, user }) {
+  const presentCount = attendance.filter((entry) => entry.status === 'Present').length;
+  const attendanceRate = attendance.length ? Math.round((presentCount / attendance.length) * 100) : 0;
+  const ratingAverage = ratings.length
+    ? (ratings.reduce((sum, rating) => sum + Number(rating.stars || 0), 0) / ratings.length).toFixed(1)
+    : '0.0';
+
+  return {
+    reports: reports.length,
+    classes: classes.length,
+    attendanceRate: `${attendanceRate}%`,
+    ratingAverage,
+    greeting: user?.name || user?.fullName || 'LUCT User',
+  };
+}
+
+export function buildAttendanceChart(attendance) {
+  if (!attendance.length) {
+    return { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], data: [0, 0, 0, 0, 0] };
+  }
+
+  const grouped = groupCount(attendance, (item) => item.date);
+  const labels = Object.keys(grouped).sort().slice(-5).map((value) => value.slice(5));
+  const data = Object.keys(grouped)
+    .sort()
+    .slice(-5)
+    .map((date) => {
+      const daily = attendance.filter((item) => item.date === date);
+      const present = daily.filter((item) => item.status === 'Present').length;
+      return Math.round((present / daily.length) * 100);
+    });
+
+  return { labels, data };
+}
+
+export function buildReportWeeklyChart(reports) {
+  if (!reports.length) {
+    return { labels: ['W1', 'W2', 'W3', 'W4'], data: [0, 0, 0, 0] };
+  }
+
+  const grouped = groupCount(reports, (item) => item.week || 'Week');
+  const labels = Object.keys(grouped).slice(-5);
+  const data = labels.map((label) => grouped[label]);
+  return { labels, data };
+}
+
+export function buildParticipationChart(attendance) {
+  if (!attendance.length) {
+    return { labels: ['Present', 'Late', 'Absent'], data: [0, 0, 0] };
+  }
+
+  const grouped = groupCount(attendance, (item) => item.status);
+  const labels = ['Present', 'Late', 'Absent'];
+  const data = labels.map((label) => grouped[label] || 0);
+  return { labels, data };
+}
+

@@ -40,9 +40,15 @@
     },
     "extra": {
       "eas": {
-        "projectId": "b069a79e-ea95-48c4-9367-b13020296dad"
+        "projectId": "24575ba0-42fc-4bfb-bcee-15af83246d2e"
       }
     },
-    "owner": "senatentsoli"
+    "owner": "ntsolisenate",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/24575ba0-42fc-4bfb-bcee-15af83246d2e"
+    }
   }
 }

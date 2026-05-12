@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userRole() {
+      return signedIn() ? userDoc().data.role : null;
+    }
+
+    function userStream() {
+      return signedIn() ? userDoc().data.streamName : null;
+    }
+
+    function userClass() {
+      return signedIn() ? userDoc().data.className : null;
+    }
+
+    function isStudent() {
+      return userRole() == 'student';
+    }
+
+    function isLecturer() {
+      return userRole() == 'lecturer';
+    }
+
+    function isPrl() {
+      return userRole() == 'prl';
+    }
+
+    function isPl() {
+      return userRole() == 'pl';
+    }
+
+    function belongsToStream(streamName) {
+      return streamName == null || streamName == userStream();
+    }
+
+    match /users/{userId} {
+      allow create: if signedIn() && request.auth.uid == userId;
+      allow read: if signedIn();
+      allow update: if signedIn() && (request.auth.uid == userId || isPl());
+    }
+
+    match /courses/{courseId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn() && isPl();
+    }
+
+    match /classes/{classId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn() && (isPl() || isPrl());
+    }
+
+    match /reports/{reportId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && isLecturer() && request.resource.data.lecturerId == request.auth.uid;
+      allow update: if signedIn() && (
+        isPl() ||
+        (isPrl() && belongsToStream(resource.data.streamName)) ||
+        (isLecturer() && resource.data.lecturerId == request.auth.uid)
+      );
+      allow delete: if signedIn() && (isPl() || (isLecturer() && resource.data.lecturerId == request.auth.uid));
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && (
+        isPl() ||
+        (isLecturer() && request.resource.data.lecturerId == request.auth.uid)
+      );
+      allow delete: if signedIn() && (isPl() || (isLecturer() && resource.data.lecturerId == request.auth.uid));
+    }
+
+    match /ratings/{ratingId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && isStudent() && request.resource.data.studentId == request.auth.uid;
+      allow update, delete: if signedIn() && (
+        isPl() ||
+        (isStudent() && resource.data.studentId == request.auth.uid)
+      );
+    }
+
+    match /monitoring/{monitoringId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && (
+        isPl() ||
+        isPrl() ||
+        (isLecturer() && request.resource.data.ownerId == request.auth.uid)
+      );
+      allow delete: if signedIn() && (
+        isPl() ||
+        isPrl() ||
+        (isLecturer() && resource.data.ownerId == request.auth.uid)
+      );
+    }
+
+    match /notifications/{notificationId} {
+      allow read, update: if signedIn() && (resource.data.userId == request.auth.uid || isPrl() || isPl());
+      allow create: if signedIn();
+    }
+
+    match /feedback/{feedbackId} {
+      allow read: if signedIn() && (isPrl() || isPl());
+      allow create, update: if signedIn() && (isPrl() || isPl());
+      allow delete: if signedIn() && isPl();
+    }
+  }
+}

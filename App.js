@@ -1,11 +1,8 @@
 import React from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { AppProviders } from './src/providers/AppProviders';
+import FrontendApp from './frontend/App';
 
+// Main Expo entry point.
+// Expo loads this file first, and we hand off to the structured frontend app.
 export default function App() {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AppProviders />
-    </GestureHandlerRootView>
-  );
+  return <FrontendApp />;
 }
